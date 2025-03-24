@@ -35,8 +35,27 @@ def FindIndicesOfSouthwestCornerOfCO_HRRR(MIN_LAT, MIN_LON):
     return int(x_sw[0]), int(y_sw[0])
 
 
-def FindIndicesOfSpecificPoint(model='hrrr', MIN_LAT=37, MIN_LON=251):
+def FindIndicesOfSpecificPoint(MIN_LAT=37, MIN_LON=251, model='hrrr'):
     
-    #### TO DO: more general version of the point finding function to find indices of a point in either HRRR or URMA files
+    # designed to work in both HRRR and URMA grids
+    if model=='hrrr':
+        H = Herbie("2014-08-02 00:00", model="hrrr", product='sfc', verbose=False)
+        ds = H.xarray(r":TMP:surface")
+    elif model=='urma':
+        H = Herbie("2024-01-01 00:00", model="urma", verbose=False)
+        H.download()
+        ds = H.xarray()[3]
+        ds = ds['t2m']
+    else:
+        print("This method only works for HRRR and URMA data. Enter ' model='hrrr' or ' model='urma' ' ")
+        
+    abslat = np.abs(ds.latitude.data - MIN_LAT)
+    abslon = np.abs(ds.longitude.data - MIN_LON)
     
-    return
+    center = np.maximum(abslat, abslon)
+
+    y_sw, x_sw = np.where(center==np.min(center))
+    
+    #returns the raw integers of the indices, NOT the xarray or int64
+    #ORDER GIVES LON THEN LAT 
+    return int(x_sw[0]), int(y_sw[0])

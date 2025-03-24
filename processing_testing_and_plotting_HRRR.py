@@ -36,6 +36,7 @@ HRRR_t2m = H_HRRR.xarray(r":TMP:surface") #does NOT download to local directory!
 
 #%%
 # spatial subsetting
+# NOT using the Herbie pick_points() method b/c it shouldn't preserve spatial structure - though it is likely superior for single-point data
 
 # easiest: using .where, but this results in NaNs
 subregion_where = HRRR_t2m.where((HRRR_t2m.latitude>MIN_LAT)&(HRRR_t2m.latitude<MAX_LAT)&(HRRR_t2m.longitude>MIN_LON)&(HRRR_t2m.longitude<MAX_LON), drop=True)
@@ -43,23 +44,17 @@ subregion_where = HRRR_t2m.where((HRRR_t2m.latitude>MIN_LAT)&(HRRR_t2m.latitude<
 # less easy: appealing to x/y dimensions and doing index selection to get a square region
 # "square" is relative - due to the projection, this is actually a distorted rectangle with curved sides and wider bottom than top when projected onto the HRRR map
 
-
-
-IDX_MIN_LON, IDX_MIN_LAT = FindIndicesOfSouthwestCornerOfCO_HRRR(MIN_LAT, MIN_LON)
-
-
-
-#%%
-# IDX_MIN_LAT = int(np.min(np.where(HRRR_t2m.latitude>MIN_LAT)[0])) #[0] b/c dimensions are (y,x) ordered
-# IDX_MIN_LON = int(np.min(np.where(HRRR_t2m.longitude>MIN_LON)[1])) #[1] b/c dimensions are (y,x) ordered
+IDX_MIN_LON, IDX_MIN_LAT = FindIndicesOfSouthwestCornerOfCO_HRRR(MIN_LAT-0.5, MIN_LON+0.2)
 
 subregion_idx = HRRR_t2m.isel(y=slice(IDX_MIN_LAT, IDX_MIN_LAT+IMG_SIZE_LAT),
                               x=slice(IDX_MIN_LON, IDX_MIN_LON+IMG_SIZE_LON))
 
-plt.figure()
-subregion_where.t.plot(cmap=cm.coolwarm)
-plt.figure()
-subregion_idx.t.plot(cmap=cm.coolwarm)
+
+#%%
+# plt.figure()
+# subregion_where.t.plot(cmap=cm.coolwarm)
+# plt.figure()
+# subregion_idx.t.plot(cmap=cm.coolwarm)
 
 
 #%% 
